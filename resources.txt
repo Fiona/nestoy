@@ -1,0 +1,3 @@
+NES-dev wiki: http://wiki.nesdev.com/w/index.php
+  iNES format specs: http://wiki.nesdev.com/w/index.php/INES
+6502 CPU reference doc: http://emu-docs.org/CPU%2065xx/6502.txt
