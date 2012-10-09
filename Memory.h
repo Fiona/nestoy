@@ -18,6 +18,8 @@ class Memory
 public:
 
     Memory(int num_locations_in_memory);
+    void Store_At_Value(int location, uint8 value_to_store);
+    uint8 Get_Value_At(int location);
 
 };
 

@@ -49,33 +49,20 @@ void CPU6502::Tick()
     case 0xa9:
         Op_LDA(Address_Immediate());
         break;
-/*
-    case 0xa5:
-        Op_LDA();
+
+    // LDX
+    case 0xa2:
+        Op_LDX(Address_Immediate());
         break;
-    case 0xb5:
-        Op_LDA();
-        break;
-    case 0xad:
-        Op_LDA();
-        break;
-    case 0xbd:
-        Op_LDA();
-        break;
-    case 0xb9:
-        Op_LDA();
-        break;
-    case 0xa1:
-        Op_LDA();
-        break;
-    case 0xb1:
-        Op_LDA();
-        break;
-*/
 
     // SEI
     case 0x78:
         Op_SEI();
+        break;
+
+    // STA
+    case 0x8d:
+        Op_STA(Address_Absolute());
         break;
 
     default:
@@ -95,6 +82,22 @@ uint8 CPU6502::Address_Immediate()
 {
     iProgram_Counter++;
     return Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter);
+}
+
+
+/**
+ * Returns the value to be passed to an opcode using absolute addressing.
+ * Absolute adressing gets a value that is stored in the next two bytes.
+ */
+int CPU6502::Address_Absolute()
+{
+
+	uint8 low_byte = Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter + 1);
+	uint8 high_byte = Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter + 2);
+    iProgram_Counter += 2;
+
+    return ((int)high_byte << 8) + (int)low_byte;
+
 }
 
 
@@ -178,11 +181,23 @@ void CPU6502::Op_CLD()
  * OPCODE: LDA - 0a9 0a5 0b5 0ad 0bd 0b9 0a1 0b1
  * Load accumulator register with memory value
  */
-void CPU6502::Op_LDA(uint8 value)
+void CPU6502::Op_LDA(int value)
 {
     iAccumulator = value;
     Set_Negative_Flag_From_Value(iAccumulator);
     Set_Zero_Flag_From_Value(iAccumulator);
+}
+
+
+/**
+ * OPCODE: LDX - 0A2 0A6 0B6 0AE 0BE
+ * Load X register with memory value
+ */
+void CPU6502::Op_LDX(int value)
+{
+    iX_Register = Core::Instance()->oMemory->Get_Value_At(value);
+    Set_Negative_Flag_From_Value(iX_Register);
+    Set_Zero_Flag_From_Value(iX_Register);
 }
 
 
@@ -193,4 +208,14 @@ void CPU6502::Op_LDA(uint8 value)
 void CPU6502::Op_SEI()
 {
     Set_Interrupt_Flag(1);
+}
+
+
+/**
+ * OPCODE: STA - 085 095 081 091 08D 09D 099
+ * Store value from accumulator into memory
+ */
+void CPU6502::Op_STA(int value)
+{
+    Core::Instance()->oMemory->Store_At_Value(value, iAccumulator);
 }

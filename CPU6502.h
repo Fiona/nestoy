@@ -22,6 +22,7 @@ class CPU6502
     uint8 iCurrent_Opcode;
 
     uint8 Address_Immediate();
+    int Address_Absolute();
     
     void Set_Interrupt_Flag(int set_to);
     void Set_Decimal_Flag(int set_to);
@@ -31,8 +32,10 @@ class CPU6502
     void Set_Zero_Flag_From_Value(uint8 value);
 
     void Op_CLD();
-    void Op_LDA(uint8 value);
+    void Op_LDA(int value);
+    void Op_LDX(int value);
     void Op_SEI();
+    void Op_STA(int value);
 
 public:
 
