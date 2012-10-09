@@ -1,6 +1,9 @@
 EXECUTABLE=nestoy
 SOURCES=main.cpp \
-Core.cpp 
+Core.cpp \
+CPU6502.cpp \
+Cartridge.cpp \
+Memory.cpp
 
 CC=g++
 CFLAGS=-c -Wall
