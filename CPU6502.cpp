@@ -23,7 +23,7 @@ CPU6502::CPU6502()
     iStack_Pointer = 0xfd;
     aStatus_Register.reset();
     Set_Interrupt_Flag(1);
-    iProgram_Counter = 0;
+    iProgram_Counter = 0x8000;
     iCurrent_Opcode = 0;
 
 }
@@ -35,7 +35,7 @@ CPU6502::CPU6502()
 void CPU6502::Tick()
 {
     
-    iCurrent_Opcode = Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter);
+    iCurrent_Opcode = Core::Instance()->oMemory->Get_Value_At(iProgram_Counter);
     iProgram_Counter++;
 
     std::cout << "Op: " << std::hex << (int)iCurrent_Opcode << std::endl;
@@ -51,6 +51,11 @@ void CPU6502::Tick()
     // CLD
     case 0xd8:
         Op_CLD();
+        break;
+
+    // JSR
+    case 0x20:
+        Op_JSR(Address_Absolute());
         break;
 
     // LDA
@@ -95,13 +100,36 @@ void CPU6502::Tick()
 
 
 /**
+ * Push a value on the stack. The 6502 stack is at page
+ * 0x01 of memory. From 0x100 to 0x1ff. The stack pointer
+ * works "downwards", so pushing decrements and vise-versa.
+ */
+void CPU6502::Push_Stack(uint8 value)
+{
+    Core::Instance()->oMemory->Store_At_Value(0x100 + (int)iStack_Pointer, value);
+    iStack_Pointer--;
+}
+
+
+/**
+ * Pop a value from the stack. Check the comment on Push_Stack 
+ * for details on the 6502 stack.
+ */
+uint8 CPU6502::Pop_Stack()
+{
+    iStack_Pointer++;
+    return Core::Instance()->oMemory->Get_Value_At(0x100 + (int)iStack_Pointer);
+}
+
+
+/**
  * Returns the value to be passed to an opcode using immediate
  * addressing. Immediate adressing is the next value in the RPG ROM.
  */
 uint8 CPU6502::Address_Immediate()
 {
     iProgram_Counter++;
-    return Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter - 1);
+    return Core::Instance()->oMemory->Get_Value_At(iProgram_Counter - 1);
 }
 
 
@@ -112,11 +140,11 @@ uint8 CPU6502::Address_Immediate()
 int CPU6502::Address_Absolute()
 {
 
-	uint8 low_byte = Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter);
-	uint8 high_byte = Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter + 1);
+	uint8 low_byte = Core::Instance()->oMemory->Get_Value_At(iProgram_Counter);
+	uint8 high_byte = Core::Instance()->oMemory->Get_Value_At(iProgram_Counter + 1);
     iProgram_Counter += 2;
 
-    return ((int)high_byte << 8) + (int)low_byte;
+    return (int)(high_byte << 8) + (int)low_byte;
 
 }
 
@@ -128,8 +156,8 @@ int CPU6502::Address_Absolute()
 int CPU6502::Address_Absolute_X()
 {
 
-	uint8 low_byte = Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter);
-	uint8 high_byte = Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter + 1);
+	uint8 low_byte = Core::Instance()->oMemory->Get_Value_At(iProgram_Counter);
+	uint8 high_byte = Core::Instance()->oMemory->Get_Value_At(iProgram_Counter + 1);
     iProgram_Counter += 2;
 
     int addr = ((int)high_byte << 8) + (int)low_byte + (int)iX_Register;
@@ -149,7 +177,7 @@ int CPU6502::Address_Absolute_X()
 int CPU6502::Address_Zero_Page()
 {
     iProgram_Counter++;
-	return Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter - 1);
+	return Core::Instance()->oMemory->Get_Value_At(iProgram_Counter - 1);
 }
 
 
@@ -161,12 +189,12 @@ int CPU6502::Address_Zero_Page()
 int CPU6502::Address_Relative()
 {
 
-	uint8 address = Core::Instance()->oCartridge->Get_PRG_Opcode_At(iProgram_Counter + 1);
+	int address = (int)Core::Instance()->oMemory->Get_Value_At(iProgram_Counter);
 
     if(address < 0x80)
-        address = iProgram_Counter + address;
+        address =  (int)address + (int)iProgram_Counter;
     else
-        address = (iProgram_Counter - 0x100) + address;
+        address = (int)address + (int)(iProgram_Counter - 0x100);
 
     address++;
 
@@ -265,6 +293,25 @@ void CPU6502::Op_BPL()
 void CPU6502::Op_CLD()
 {
     Set_Decimal_Flag(0);
+}
+
+
+/**
+ * OPCODE: JSR - 020
+ * Jump to new location pushing the return address on stack.
+ */
+void CPU6502::Op_JSR(int value)
+{
+    iProgram_Counter--;
+    // Push high address
+    Push_Stack((iProgram_Counter >> 8));
+    // Push low address
+    Push_Stack(iProgram_Counter & 0xff);
+    // Jump to location
+    iProgram_Counter = value;
+
+    std::cout << "JSR jump to " << std::hex << (iProgram_Counter) << std::endl;
+
 }
 
 

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include "Cartridge.h"
+#include "Core.h"
 
 
 /**
@@ -57,6 +58,10 @@ Cartridge::Cartridge(FILE* fileh)
     fread(&aPRG_ROM[0], 1, iPRG_ROM_Size, fileh);
     aCHR_ROM.resize(iCHR_ROM_Size);
     fread(&aCHR_ROM[0], 1, iCHR_ROM_Size, fileh);
+
+    // Put the PRG ROM into memory.
+    for(std::vector<uint8>::size_type i = 0; i != aPRG_ROM.size(); i++)
+        Core::Instance()->oMemory->Store_At_Value(0x8000 + (int)i, aPRG_ROM[i]);
 
     // What mapper are we using?
     iMapper = iFlags6 >> 4 | (iFlags7 & 0xF0);

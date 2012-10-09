@@ -22,6 +22,9 @@ class CPU6502
     int iProgram_Counter;
     uint8 iCurrent_Opcode;
 
+    void Push_Stack(uint8 value);
+    uint8 Pop_Stack();
+
     uint8 Address_Immediate();
     int Address_Absolute();
     int Address_Relative();
@@ -37,6 +40,7 @@ class CPU6502
 
     void Op_BPL();
     void Op_CLD();
+    void Op_JSR(int value);
     void Op_LDA(int value);
     void Op_LDX(int value);
     void Op_SEI();

@@ -38,9 +38,9 @@ void Core::Load_And_Execute_ROM(std::string rom_filename)
         throw "Error loading ROM file";
 
     // Init subsystems
-    oCartridge = new Cartridge(fileh);
     oCPU = new CPU6502;
     oMemory = new Memory(2048);
+    oCartridge = new Cartridge(fileh);
 
     fclose(fileh);
 
