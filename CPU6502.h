@@ -25,6 +25,10 @@ class CPU6502
     
     void Set_Interrupt_Flag(int set_to);
     void Set_Decimal_Flag(int set_to);
+    void Set_Negative_Flag(int set_to);
+    void Set_Zero_Flag(int set_to);
+    void Set_Negative_Flag_From_Value(uint8 value);
+    void Set_Zero_Flag_From_Value(uint8 value);
 
     void Op_CLD();
     void Op_LDA(uint8 value);

@@ -117,6 +117,54 @@ void CPU6502::Set_Decimal_Flag(int set_to)
 
 
 /**
+ * Sets the negative flag status to a specific value
+ */
+void CPU6502::Set_Negative_Flag(int set_to)
+{
+    aStatus_Register[NEGATIVE_FLAG] = set_to;
+}
+
+
+/**
+ * Sets the zero flag status to a specific value
+ */
+void CPU6502::Set_Zero_Flag(int set_to)
+{
+    aStatus_Register[ZERO_FLAG] = set_to;
+}
+
+
+/**
+ * Used by opcodes to check a value that has been set and 
+ * set the negative flag accordingly.
+ */
+void CPU6502::Set_Negative_Flag_From_Value(uint8 value)
+{
+
+    if((value & 0x80) == 0x80)
+        Set_Negative_Flag(1);
+    else
+        Set_Negative_Flag(0);
+
+}
+
+
+/**
+ * Used by opcodes to check if the result of a command or an assigned
+ * value was zero or not and sets the zero flag accordingly.
+ */
+void CPU6502::Set_Zero_Flag_From_Value(uint8 value)
+{
+
+    if(value == 0x00)
+        Set_Zero_Flag(1);
+    else
+        Set_Zero_Flag(0);
+
+}
+
+
+/**
  * OPCODE: CLD - 0d8
  * Clear decimal mode
  */
@@ -133,6 +181,8 @@ void CPU6502::Op_CLD()
 void CPU6502::Op_LDA(uint8 value)
 {
     iAccumulator = value;
+    Set_Negative_Flag_From_Value(iAccumulator);
+    Set_Zero_Flag_From_Value(iAccumulator);
 }
 
 

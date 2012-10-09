@@ -11,7 +11,7 @@ const int DECIMAL_FLAG = 3;
 const int BREAK_FLAG = 4;
 const int DUMMY_FLAG = 5;
 const int OVERFLOW_FLAG = 6;
-const int SIGN_FLAG = 7;
+const int NEGATIVE_FLAG = 7;
 
 #endif
 
