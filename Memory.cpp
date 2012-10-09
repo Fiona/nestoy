@@ -15,7 +15,7 @@ Memory::Memory(int num_locations_in_memory)
 {
 
     aMemory.clear();
-    aMemory.resize(num_locations_in_memory);
+    aMemory.resize(num_locations_in_memory, 0xff);
 
 }
 
